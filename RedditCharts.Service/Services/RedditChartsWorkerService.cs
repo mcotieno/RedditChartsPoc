@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using RedditCharts.Common.Providers;
 
 namespace RedditChartsService.Services
@@ -11,17 +12,20 @@ namespace RedditChartsService.Services
         private readonly IRedditChartsHttpClient _redditChartsHttpClient;
         private readonly IRedditChartsPostProcessor _redditChartsPostProcessor;
         private readonly ILogger<RedditChartsWorkerService> _logger;
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
         public RedditChartsWorkerService(
             IConfiguration configuration,
             IRedditChartsHttpClient redditChartsHttpClient,
             IRedditChartsPostProcessor redditChartsPostProcessor,
-            ILogger<RedditChartsWorkerService> logger)
+            ILogger<RedditChartsWorkerService> logger,
+            IHostApplicationLifetime hostApplicationLifetime)
         {
             _configuration = configuration;
             _redditChartsHttpClient = redditChartsHttpClient;
             _redditChartsPostProcessor = redditChartsPostProcessor;
             _logger = logger;
+            _hostApplicationLifetime = hostApplicationLifetime;
         } 
 
         /// <summary>
@@ -52,6 +56,9 @@ namespace RedditChartsService.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in monitoring loop");
+
+                    _hostApplicationLifetime.StopApplication();
+                   
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(_configuration.GetValue("Reddit:PollingIntervalSeconds", 30)), stoppingToken);
@@ -76,6 +83,7 @@ namespace RedditChartsService.Services
 
             await Task.WhenAll(tasks);
         }
+             
     }
 }
 

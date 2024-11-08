@@ -11,10 +11,22 @@ namespace RedditCharts.Common.Providers
     public class RedditChartsPostProcessor : IRedditChartsPostProcessor
     {
         private readonly ILogger<RedditChartsPostProcessor> _logger;
-
         private readonly HashSet<string> _processedPostIds;
-        private readonly Dictionary<string, int> _userPostCount;
-        private readonly Dictionary<string, int> _postsUpVoteCount;
+
+        private Dictionary<string, int> _userPostCount;
+        public Dictionary<string, int> UserPostCount
+        {
+            get => _userPostCount;
+            set => _userPostCount = value;
+        }
+
+
+        private Dictionary<string, int> _postsUpVoteCount;
+        public Dictionary<string, int> PostsUpVoteCount { 
+            get => _postsUpVoteCount; 
+            set => _postsUpVoteCount = value; 
+        }
+
 
         public RedditChartsPostProcessor(ILogger<RedditChartsPostProcessor> logger)
         {
@@ -23,6 +35,7 @@ namespace RedditCharts.Common.Providers
             _userPostCount = new Dictionary<string, int>();
             _postsUpVoteCount = new Dictionary<string, int>();
         }
+
 
         public async Task ProcessPostAsync(IEnumerable<RedditPostModel> posts, CancellationToken stoppingToken)
         {
@@ -48,7 +61,7 @@ namespace RedditCharts.Common.Providers
                         _userPostCount[post.author] = 1;
                     }
                     //vote count
-                    _postsUpVoteCount.Add(post.id, post.ups);
+                    PostsUpVoteCount.Add(post.id, post.ups);
                 }
             }
             _logger.LogInformation("\n---- Users with most posts ---");
@@ -62,7 +75,7 @@ namespace RedditCharts.Common.Providers
 
             _logger.LogInformation("\n---- Posts with most up votes ---");
 
-            var topUpVotes = _postsUpVoteCount.OrderByDescending(x => x.Value).Take(5).ToList();
+            var topUpVotes = PostsUpVoteCount.OrderByDescending(x => x.Value).Take(5).ToList();
 
             foreach (var votes in topUpVotes)
             {

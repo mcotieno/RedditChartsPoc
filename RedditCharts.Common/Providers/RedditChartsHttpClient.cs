@@ -46,7 +46,13 @@ namespace RedditCharts.Common.Providers
                 var postSize = _configuration.GetSection("Reddit:PostSize");
                 var userAgent = _configuration.GetSection("Reddit:UserAgent");
 
-                client.DefaultRequestHeaders.Add("User-Agent", userAgent.Value);
+                if (userAgent.Value != null)
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent", userAgent.Value);
+                }
+                else {
+                    client.DefaultRequestHeaders.Add("User-Agent", "RedditChartsMonitor/1.0");
+                }
 
                 var response = await client.GetAsync($"{url.Value}{subreddit}/new.json?limit={postSize.Value}", cancellationToken);
 
